@@ -12,4 +12,4 @@ license = { text = "MIT" }
 dependencies = ["grpcio>=1.60.0"]
 
 [project.urls]
-Homepage = "https://github.com/Faticc/java8to25"
+Homepage = "https://github.com/Faticc/auth"
