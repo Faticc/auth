@@ -46,10 +46,3 @@ def send_request(username: str, password: str):
             "error": e.details(),
             "code": e.code().name
         }
-
-if __name__ == "__main__":
-    username = input("Username: ")
-    password = input("Password: ")
-
-    result = send_request(username, password)
-    print(result)
