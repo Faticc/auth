@@ -1,6 +1,6 @@
 # auth/__init__.py
 from .core import send_request, check_session
-from ..models import (
+from .models import (
     AuthResult,
     SessionCheckResult
 )
