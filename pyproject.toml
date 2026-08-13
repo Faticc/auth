@@ -12,8 +12,13 @@ license = { text = "MIT" }
 dependencies = [
     "grpcio>=1.60.0",
     "protobuf>=5.0.0",
-    "mcproto @ git+https://github.com/Faticc/mcproto.git"
+    "mcproto"
 ]
 
 [project.urls]
 Homepage = "https://github.com/Faticc/auth"
+
+[tool.setuptools.package-data]
+
+[tool.setuptools.dependencies]
+mcproto = { url = "git+https://github.com/Faticc/mcproto.git" }
