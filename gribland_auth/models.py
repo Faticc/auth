@@ -20,25 +20,6 @@ class SessionId:
 
 
 @dataclass
-class AuthResult:
-    ok: bool
-    sessionId: Optional[SessionId] = None
-    profile: Optional[Profile] = None
-    refresh_token: Optional[str] = None
-    expires_in: Optional[int] = None
-    error: Optional[str] = None
-    code: Optional[str] = None
-
-
-@dataclass
-class SessionCheckResult:
-    valid: bool
-    profile: Optional[Profile] = None
-    error: Optional[str] = None
-    code: Optional[str] = None
-
-
-@dataclass
 class GameSession:
     uuid: str
     access_token: str
@@ -49,5 +30,25 @@ class GameSession:
 class GameSessionResult:
     ok: bool
     session: Optional[GameSession] = None
+    error: Optional[str] = None
+    code: Optional[str] = None
+
+
+@dataclass
+class AuthResult:
+    ok: bool
+    sessionId: Optional[SessionId] = None
+    profile: Optional[Profile] = None
+    refresh_token: Optional[str] = None
+    expires_in: Optional[int] = None
+    game_session: Optional[GameSession] = None
+    error: Optional[str] = None
+    code: Optional[str] = None
+
+
+@dataclass
+class SessionCheckResult:
+    valid: bool
+    profile: Optional[Profile] = None
     error: Optional[str] = None
     code: Optional[str] = None

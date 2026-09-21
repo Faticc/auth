@@ -136,8 +136,16 @@ def _fetch_profile(access_token: str) -> Tuple[int, Any]:
 def send_request(
     username: str,
     password: str,
-    code: Optional[str] = None
+    code: Optional[str] = None,
+    client_name: Optional[str] = None
 ) -> AuthResult:
+    """Log in and, when `client_name` is given, also perform step 2 (the
+    JWT -> per-client game session exchange) so the returned result already
+    carries a ready-to-use `game_session` (see `create_game_session`).
+
+    `client_name` must match one of the launcher's client names, e.g.
+    "SKYDRIVE-HITECH-TEST" or "OneBlockProd". Omit it to get the JWT only.
+    """
     try:
         status, data = _request(
             "POST",
@@ -172,10 +180,23 @@ def send_request(
     try:
         status, data = _fetch_profile(access_token)
     except _Unreachable:
-        return result
+        pass
+    else:
+        if status == 200:
+            result.profile = _profile(data)
 
-    if status == 200:
-        result.profile = _profile(data)
+    if client_name:
+        game = create_game_session(access_token, client_name)
+
+        if game.ok:
+            result.game_session = game.session
+        else:
+            # Login worked but the game-session exchange did not: report
+            # failure, but keep sessionId/profile so the caller can retry
+            # create_game_session() directly instead of logging in again.
+            result.ok = False
+            result.error = game.error
+            result.code = game.code
 
     return result
 

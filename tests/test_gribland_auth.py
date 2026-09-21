@@ -56,6 +56,60 @@ class LoginTests(unittest.TestCase):
         )
         self.assertEqual(calls[1].get_header("Authorization"), "Bearer tok")
 
+    def test_login_returns_game_session_when_client_given(self):
+        urls = []
+
+        def fake(request, timeout):
+            urls.append(request.full_url)
+            if request.full_url.endswith("/authentication/login"):
+                return FakeResponse(200, TOKEN)
+            if "/minecraft/createSession/" in request.full_url:
+                return FakeResponse(200, {"uuid": "abc",
+                                          "accessToken": "f" * 64,
+                                          "username": "Steve"})
+            return FakeResponse(200, USER)
+
+        with mock.patch("urllib.request.urlopen", fake):
+            result = send_request("Steve", "pw", client_name="OneBlockProd")
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.game_session.access_token, "f" * 64)
+        self.assertEqual(result.game_session.username, "Steve")
+        self.assertTrue(urls[-1].endswith("/minecraft/createSession/OneBlockProd"))
+
+    def test_login_without_client_skips_exchange(self):
+        urls = []
+
+        def fake(request, timeout):
+            urls.append(request.full_url)
+            if request.full_url.endswith("/authentication/login"):
+                return FakeResponse(200, TOKEN)
+            return FakeResponse(200, USER)
+
+        with mock.patch("urllib.request.urlopen", fake):
+            result = send_request("Steve", "pw")
+
+        self.assertTrue(result.ok)
+        self.assertIsNone(result.game_session)
+        self.assertFalse(any("createSession" in u for u in urls))
+
+    def test_exchange_failure_marks_login_failed_but_keeps_jwt(self):
+        def fake(request, timeout):
+            if request.full_url.endswith("/authentication/login"):
+                return FakeResponse(200, TOKEN)
+            if "/minecraft/createSession/" in request.full_url:
+                raise http_error(400, {"message": "unknown client"})
+            return FakeResponse(200, USER)
+
+        with mock.patch("urllib.request.urlopen", fake):
+            result = send_request("Steve", "pw", client_name="Nope")
+
+        self.assertFalse(result.ok)
+        self.assertEqual(result.code, "INVALID_ARGUMENT")
+        self.assertEqual(result.error, "unknown client")
+        self.assertEqual(result.sessionId.value, "tok")
+        self.assertIsNone(result.game_session)
+
     def test_snake_case_token(self):
         body = {"access_token": "tok", "refresh_token": "ref", "expires_in": 5}
 
