@@ -17,3 +17,6 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/Faticc/auth"
+
+[tool.setuptools.packages.find]
+include = ["auth*", "gribland_auth*"]
