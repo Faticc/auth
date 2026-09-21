@@ -7,7 +7,9 @@ from .models import (
     Profile,
     SessionId,
     AuthResult,
-    SessionCheckResult
+    SessionCheckResult,
+    GameSession,
+    GameSessionResult
 )
 
 # The launcher tries these hosts in order and uses the first one that answers.
@@ -196,3 +198,43 @@ def check_session(session_id: str) -> SessionCheckResult:
         return SessionCheckResult(valid=False, error="Unknown response", code="UNKNOWN")
 
     return SessionCheckResult(valid=True, profile=profile)
+
+
+def create_game_session(access_token: str, client_name: str) -> GameSessionResult:
+    """Exchange a login JWT for a per-client game session (the 64-hex token
+    the launcher hands to the Minecraft process for joinServer/hasJoined).
+    """
+    try:
+        status, data = _request(
+            "GET",
+            f"/minecraft/createSession/{client_name}",
+            token=access_token
+        )
+    except _Unreachable as e:
+        return GameSessionResult(ok=False, error=str(e), code="UNAVAILABLE")
+
+    if status != 200:
+        return GameSessionResult(
+            ok=False,
+            error=_error_text(data, status),
+            code=_error_code(status)
+        )
+
+    if isinstance(data, dict) and isinstance(data.get("data"), dict):
+        data = data["data"]
+
+    uuid = _pick(data, "uuid")
+    session_token = _pick(data, "accessToken", "access_token")
+    username = _pick(data, "username", "name")
+
+    if uuid is None or session_token is None or username is None:
+        return GameSessionResult(ok=False, error="Unknown response", code="UNKNOWN")
+
+    return GameSessionResult(
+        ok=True,
+        session=GameSession(
+            uuid=str(uuid),
+            access_token=str(session_token),
+            username=str(username)
+        )
+    )

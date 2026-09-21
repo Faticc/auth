@@ -36,3 +36,18 @@ class SessionCheckResult:
     profile: Optional[Profile] = None
     error: Optional[str] = None
     code: Optional[str] = None
+
+
+@dataclass
+class GameSession:
+    uuid: str
+    access_token: str
+    username: str
+
+
+@dataclass
+class GameSessionResult:
+    ok: bool
+    session: Optional[GameSession] = None
+    error: Optional[str] = None
+    code: Optional[str] = None

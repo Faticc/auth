@@ -4,7 +4,7 @@ import unittest
 import urllib.error
 from unittest import mock
 
-from gribland_auth import check_session, send_request
+from gribland_auth import check_session, create_game_session, send_request
 
 
 class FakeResponse:
@@ -128,6 +128,49 @@ class SessionTests(unittest.TestCase):
             result = check_session("bad")
         self.assertEqual((result.valid, result.code),
                          (False, "UNAUTHENTICATED"))
+
+
+GAME = {"uuid": "abc", "accessToken": "f" * 64, "username": "Steve"}
+
+
+class GameSessionTests(unittest.TestCase):
+    def test_success(self):
+        calls = []
+
+        def fake(request, timeout):
+            calls.append(request)
+            return FakeResponse(200, GAME)
+
+        with mock.patch("urllib.request.urlopen", fake):
+            result = create_game_session("jwt", "SKYDRIVE-HITECH-TEST")
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.session.access_token, "f" * 64)
+        self.assertEqual(result.session.username, "Steve")
+        self.assertEqual(calls[0].get_method(), "GET")
+        self.assertTrue(calls[0].full_url.endswith(
+            "/minecraft/createSession/SKYDRIVE-HITECH-TEST"))
+        self.assertEqual(calls[0].get_header("Authorization"), "Bearer jwt")
+        self.assertIsNone(calls[0].data)
+
+    def test_unauthorized(self):
+        err = http_error(401, {"message": "Unauthenticated."})
+        with mock.patch("urllib.request.urlopen", side_effect=err):
+            result = create_game_session("bad", "OneBlockProd")
+        self.assertEqual((result.ok, result.code),
+                         (False, "UNAUTHENTICATED"))
+
+    def test_incomplete_response(self):
+        with mock.patch("urllib.request.urlopen",
+                        return_value=FakeResponse(200, {"uuid": "abc"})):
+            result = create_game_session("jwt", "OneBlockProd")
+        self.assertEqual((result.ok, result.code), (False, "UNKNOWN"))
+
+    def test_unreachable(self):
+        with mock.patch("urllib.request.urlopen",
+                        side_effect=urllib.error.URLError("down")):
+            result = create_game_session("jwt", "OneBlockProd")
+        self.assertEqual(result.code, "UNAVAILABLE")
 
 
 if __name__ == "__main__":
