@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mc-reauth"
+version = "0.1.0"
+description = "Hot-swap the Minecraft account of a running client (MCSkill / GribLand)"
+authors = [{ name = "Faticc", email = "komeristyj07@gmail.com" }]
+requires-python = ">=3.8"
+license = { text = "MIT" }
+# Reuses the auth / gribland_auth packages from the parent repository.
+# Install that first (pip install -e .) or keep the repo root on PYTHONPATH.
+dependencies = ["auth"]
+
+[project.scripts]
+mc-reauth = "mc_reauth.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mc_reauth*"]
