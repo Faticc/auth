@@ -6,3 +6,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+# forge mod build
+mod/build/
+mod/.gradle/
+mod/run/

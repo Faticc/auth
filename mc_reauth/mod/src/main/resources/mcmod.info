@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "mcreauth",
+    "name": "MC ReAuth",
+    "description": "Смена аккаунта (MCSkill / GribLand) без перезапуска игры. Кнопка в меню сетевой игры.",
+    "version": "0.1.0",
+    "mcversion": "1.7.10",
+    "authorList": ["Faticc"],
+    "credits": "",
+    "logoFile": "",
+    "url": "https://github.com/Faticc/auth",
+    "parent": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

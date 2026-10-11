@@ -156,10 +156,21 @@ mc_reauth/
     include/jni_md.h   Windows JNI defs (jni.h/jvmti.h pulled from your JDK)
     build.sh           cross-compile x64 + x86
     reauth.ini         optional port + field-name overrides
+  mod/                 Forge 1.7.10 client mod (button in the multiplayer
+                       screen; pure-Java MCSkill gRPC + GribLand HTTP, no
+                       DLL and no bridge) -- see mod/README.md
   python/mc_reauth/    auth orchestration + control client + CLI
   python/tests/        unit tests (stub backends, no network)
   examples/
 ```
+
+## Two independent ways to switch accounts
+
+- **DLL** (`dll/`) — injected into `javaw.exe` by your admin tool; works
+  across many versions; driven from the Python layer over a loopback port.
+- **Forge mod** (`mod/`) — a self-contained 1.7.10 client mod with a button
+  in the multiplayer screen; does its own auth and session swap in-process,
+  no external process. See `mod/README.md`.
 
 This subproject is self-contained and can be lifted into its own repository
 unchanged; only the two `import auth` / `import gribland_auth` references tie
